@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from "react";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import MusicShopArtifacts from "./contracts/MusicShop.json";
 import type { MusicShop } from "./typechain";
@@ -17,11 +17,11 @@ import {
 
 const HARDHAT_NETWORK_ID = "31337";
 
+let musicShop: MusicShop;
+let provider: any;
 declare let window: any;
 
 export const App = () => {
-  let provider: Web3Provider;
-  let musicShop: MusicShop;
   const initialState: IState = {
     selectedAccount: null,
     txBeingSent: null,
@@ -81,8 +81,15 @@ export const App = () => {
       balance: await updateBalance(selectedAccount),
       isOwner: owner.toUpperCase() === selectedAccount.toUpperCase(),
     });
-    const albums = await getAlbums();
-     setList(albums);
+    const blockNumber = await provider.getBlockNumber();
+    await getAlbums();
+    musicShop.on("AlbumBought", async (args: any[]) => {
+      const event = args[args.length - 1];
+      if (event.blockNumber >= blockNumber) {
+        console.log("ALbumBought event args", args);
+        await getAlbums();
+      }
+    });
   };
 
   const resetState = () => {
@@ -129,17 +136,49 @@ export const App = () => {
     return numberBalance.toString();
   };
 
+  const albumList =
+    list &&
+    list.map(({ index, uuid, title, price, quantity }) => {
+      console.log(`price for ${title}`, price);
+      console.log(`quantity for ${title}`, quantity);
+      console.log(BigNumber.from(0));
+
+      return (
+        <div className="flex flex-col text-2xl mx-auto text-center" key={index}>
+          <h1 className="text-4xl py-4">
+            {title} #{index}
+          </h1>
+          <p>Price: {String(price)}</p>
+          <p>Quantity: {String(quantity)}</p>
+          {quantity !== BigNumber.from(0) && (
+            <button
+              onClick={(e) => handleBuyAlbum(e, Number(index), Number(price))}
+              className="bg-slate-800 mx-auto text-teal-400 dark:text-slate-800 dark:bg-teal-400 px-4 py-2 text-2xl my-2 text-center rounded-full"
+            >
+              buy 1 copy
+            </button>
+          )}
+
+          {quantity === BigNumber.from(0) && (
+            <p className="text-center text-red-800">Out os stock...</p>
+          )}
+        </div>
+      );
+    });
+
   const getAlbums = async () => {
     const albums = await musicShop.allAlbums();
-    return albums.map(({ index, uuid, title, price, quantity }) => {
-      return {
-        index: index.toString(),
-        uuid,
-        title,
-        price,
-        quantity,
-      };
-    });
+    setList([
+      ...albums.map(({ index, uuid, title, price, quantity }) => {
+        return {
+          index: index.toString(),
+          uuid,
+          title,
+          price,
+          quantity,
+        };
+      }),
+    ]);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -168,6 +207,42 @@ export const App = () => {
         txBeingSent: null,
         balance: await updateBalance(),
       });
+      await getAlbums();
+      setAlbum({
+        uuid: "",
+        title: "",
+        price: 0,
+        quantity: 0,
+      });
+    }
+  };
+
+  const handleBuyAlbum = async (
+    e: FormEvent<HTMLButtonElement>,
+    index: number,
+    price: number
+  ) => {
+    e.preventDefault();
+    try {
+      const tx = await musicShop.buy(index, 1, { value: price });
+      await tx.wait();
+      setState({
+        ...state,
+        txBeingSent: tx.hash,
+      });
+    } catch (e) {
+      console.error(e);
+      setState({
+        ...state,
+        transactionError: e,
+      });
+    } finally {
+      setState({
+        ...state,
+        txBeingSent: null,
+        balance: await updateBalance(),
+      });
+      await getAlbums();
     }
   };
 
@@ -205,25 +280,38 @@ export const App = () => {
           Your balance: {ethers.utils.formatEther(state.balance)} ETH
         </p>
       )}
-      {state.isOwner && (
-        <form
-          className="flex flex-col border border-slate-800 dark:border-teal-400 rounded-xl p-6"
-          onSubmit={handleSubmit}
-        >
-          {fields.map((el) => (
-            <div className="flex flex-col">
-              <label className="text-3xl text-center">{el}</label>
-              <input
-                type="text"
-                className="bg-transparent outline-none border-b border-purple-800 text-2xl py-4 px-2"
-                name={el}
-                onChange={handleChange}
-              />
-            </div>
-          ))}
-        </form>
-      )}
-      {/* {getAlbums() && getAlbums()} */}
+
+      <div className="flex gap-8 mx-auto justify-around container w-full">
+        {state.isOwner && (
+          <form
+            className="flex flex-col border border-slate-800 dark:border-teal-400 rounded-xl p-6"
+            onSubmit={handleSubmit}
+          >
+            {fields.map((el, index) => (
+              <div className="flex flex-col">
+                <label className="text-3xl text-center">{el}</label>
+                <input
+                  type="text"
+                  className="bg-transparent outline-none border-b border-purple-800 text-2xl py-4 px-2"
+                  name={el}
+                  onChange={handleChange}
+                  // value={albumList.find(al => {
+                  //   if(al.toString() === el) {
+                  //     return al
+                  //   }
+                  // })}
+                />
+              </div>
+            ))}
+            <button className="bg-slate-800 my-6 text-teal-400 dark:text-slate-800 dark:bg-teal-400 px-6 py-3 text-3xl text-center rounded-full">
+              add
+            </button>
+          </form>
+        )}
+        <ul className="flex flex-wrap gap-8 self-start">
+          {albumList && albumList}
+        </ul>
+      </div>
     </>
   );
 };

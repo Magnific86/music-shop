@@ -237,6 +237,13 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "fund",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "uint256",
