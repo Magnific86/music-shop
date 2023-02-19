@@ -1,17 +1,13 @@
 import { expect } from "./chai-setup";
 import { ethers, deployments, getNamedAccounts } from "hardhat";
 import { MusicShop } from "../typechain-types";
-import { BigNumber } from "ethers";
 const MusicShopAbi = require("../artifacts/contracts/MusicShop.sol/MusicShop.json");
-
-declare let window: any;
 
 describe("MusicShop", () => {
   let deployer: any;
   let user: string;
   let musicShop: MusicShop;
   let musicShopAsUser: MusicShop;
-  // let deployContract: any;
 
   const addAlbum = async () => {
     const tx = await musicShop.addAlbum(
@@ -216,20 +212,38 @@ describe("MusicShop", () => {
       );
     });
     it("doesnt allows to transfer by receive func, only buy an album", async () => {
-      const deployContract = await musicShop.deployed();
+      const Contract = await ethers.getContractFactory("MusicShop");
+      const contract = await Contract.deploy();
+      await contract.deployed();
 
+      const deployContract = await musicShop.deployed();
       await deployContract.deployed();
 
       const [owner] = await ethers.getSigners();
-      console.log(owner);
 
-      // const contract = new ethers.Contract(
-      //   deployContract.address,
-      //   MusicShopAbi.abi,
-      //   deployer
-      // );
+      const mycontract = new ethers.Contract(
+        contract.address,
+        MusicShopAbi.abi,
+        owner
+      );
 
-      // const transactionHash =
+      // const txHash = await owner.sendTransaction({
+      //   to: contract.address,
+      //   value: ethers.utils.parseEther("1.0")
+      // })
+
+      await expect(
+        owner.sendTransaction({
+          to: contract.address,
+          value: ethers.utils.parseEther("1.0"),
+        })
+      ).to.be.revertedWith("Pls, use buy func to choose album!");
+
+      // await expect(
+      //   mycontract.receive({
+      //     value: ethers.utils.parseEther("1.0"),
+      //   })
+      // ).to.be.revertedWith("Pls, use buy func to choose album!");
 
       await expect(
         owner.sendTransaction({
@@ -237,11 +251,6 @@ describe("MusicShop", () => {
           value: ethers.utils.parseEther("1.0"),
         })
       ).to.be.revertedWith("Pls, use buy func to choose album!");
-      // await deployContract.connect(deployer).receive({ value: 1000 });
     });
   });
 });
-//  await contract.sendTransaction({
-//           to: deployContract.address,
-//           value: ethers.utils.parseEther("1.0"),
-//         })
