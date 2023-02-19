@@ -7,7 +7,7 @@ export const TransactionErrorMessage: FC<MessageAndDismissProps> = ({
   dismiss,
 }) => {
   return (
-    <div>
+    <div className="bg-red-500">
       TX error: {message}
       <DismissButton dismiss={dismiss} />
     </div>

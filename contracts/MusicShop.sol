@@ -86,7 +86,7 @@ contract MusicShop {
     function buy(uint _index, uint _quantity) public payable {
         Album storage albumToBuy = albums[_index];
         require(msg.value == albumToBuy.price * _quantity, "Invalid price!");
-        require(albumToBuy.quantity > _quantity, "Out of stock!");
+        require(albumToBuy.quantity >= _quantity, "Out of stock!");
         albumToBuy.quantity -= _quantity;
 
         orders.push(

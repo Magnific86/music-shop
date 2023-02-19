@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 
 export interface IState {
   selectedAccount: string;
@@ -20,10 +20,10 @@ export interface IAlbumLoad {
   index: string;
   uuid: string;
   title: string;
-  price: ethers.BigNumber;
-  quantity: ethers.BigNumber | undefined;
+  price: BigNumber;
+  quantity: BigNumber | undefined;
 }
 
 export interface IAlbumListInitial {
-    list: IAlbumLoad[]
+  list: IAlbumLoad[];
 }
