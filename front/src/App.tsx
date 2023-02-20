@@ -138,11 +138,7 @@ export const App = () => {
 
   const albumList =
     list &&
-    list.map(({ index, uuid, title, price, quantity }) => {
-      console.log(`price for ${title}`, price);
-      console.log(`quantity for ${title}`, quantity);
-      console.log(BigNumber.from(0));
-
+    list.map(({ index, title, price, quantity }) => {
       return (
         <div className="flex flex-col text-2xl mx-auto text-center" key={index}>
           <h1 className="text-4xl py-4">
@@ -150,17 +146,15 @@ export const App = () => {
           </h1>
           <p>Price: {String(price)}</p>
           <p>Quantity: {String(quantity)}</p>
-          {quantity !== BigNumber.from(0) && (
+          {quantity > BigNumber.from(0) ? (
             <button
               onClick={(e) => handleBuyAlbum(e, Number(index), Number(price))}
               className="bg-slate-800 mx-auto text-teal-400 dark:text-slate-800 dark:bg-teal-400 px-4 py-2 text-2xl my-2 text-center rounded-full"
             >
               buy 1 copy
             </button>
-          )}
-
-          {quantity === BigNumber.from(0) && (
-            <p className="text-center text-red-800">Out os stock...</p>
+          ) : (
+            <p className="text-center text-red-800">Out of stock...</p>
           )}
         </div>
       );
