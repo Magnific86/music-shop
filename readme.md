@@ -8,9 +8,10 @@
 
 запустить тесты и проверить покрытие: npx hardhat test --network localhost / npx hardhat coverage
 
-развернуть локальный блокчейн и экспортировать abi контракта в папку front: npx hardhat deploy --network localhost --export ./front/src/contracts/MusicShop.json
+<!-- развернуть локальный блокчейн и экспортировать abi контракта в папку front: npx hardhat deploy --network localhost --export ./front/src/contracts/MusicShop.json --> уже есть
 
-экспортировать typechain в папку front: npx typechain --out-dir front/src/typechain --target ethers-v5 "artifacts/contracts/\*_/_[!dbg].json"
+<!-- экспортировать typechain в папку front: npx typechain --out-dir front/src/typechain --target ethers-v5 "artifacts/contracts/\*_/_[!dbg].json"
+ --> уже есть
 
 # В папке front:
 
