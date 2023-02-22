@@ -1,4 +1,4 @@
-import { ethers, BigNumber } from "ethers";
+import { BigNumber } from "ethers";
 
 export interface IState {
   selectedAccount: string;
