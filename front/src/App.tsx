@@ -16,6 +16,7 @@ import {
 } from "./types/mainTypes";
 
 const HARDHAT_NETWORK_ID = "31337";
+const ARBITRUM_NETWORK_ID = "421613";
 
 let musicShop: MusicShop;
 let provider: any;
@@ -49,9 +50,9 @@ export const App = () => {
     const [selectedAccount] = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
-    if (!checkNetwork()) {
-      return;
-    }
+    // if (!checkNetwork()) {
+    //   return;
+    // }
     initialize(selectedAccount);
     window.ethereum.on(
       "accountsChanged",
@@ -97,7 +98,10 @@ export const App = () => {
   };
 
   const checkNetwork = () => {
-    if (window.ethereum.networkVersion === HARDHAT_NETWORK_ID) {
+    if (
+      window.ethereum.networkVersion === HARDHAT_NETWORK_ID ||
+      window.ethereum.networkVersion === ARBITRUM_NETWORK_ID
+    ) {
       return true;
     } else {
       setState({
@@ -122,7 +126,7 @@ export const App = () => {
     });
   };
 
-  const getRpcErrorMessage = (error) => {
+  const getRpcErrorMessage = (error: any) => {
     if (error.data) {
       return error.data.message;
     }
@@ -184,6 +188,8 @@ export const App = () => {
         album.price,
         album.quantity
       );
+      console.table([album.uuid, album.title, album.price, album.quantity]);
+
       await tx.wait();
       setState({
         ...state,
@@ -289,11 +295,6 @@ export const App = () => {
                   className="bg-transparent outline-none border-b border-purple-800 text-2xl py-4 px-2"
                   name={el}
                   onChange={handleChange}
-                  // value={albumList.find(al => {
-                  //   if(al.toString() === el) {
-                  //     return al
-                  //   }
-                  // })}
                 />
               </div>
             ))}

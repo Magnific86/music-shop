@@ -22,5 +22,8 @@
   },
   "scripts": {
     "nod": "npx hardhat run scripts/balance_send_money.js --network localhost"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
   }
 }
